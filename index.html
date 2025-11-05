@@ -352,33 +352,55 @@
 
             <div class="calculator-container">
                 <div class="country-section">
-                    <h2><span class="flag">🗺️</span> Trip Distance Visualizer</h2>
+                    <h2><span class="flag">🗺️</span> Trip Distance Calculator</h2>
+
+                    <div class="input-group">
+                        <label for="startLocation">Your starting location (Netherlands)</label>
+                        <select id="startLocation" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px;">
+                            <option value="51.8126,5.8372">🏠 Nijmegen</option>
+                            <option value="51.4416,5.4697">🏠 Venlo</option>
+                            <option value="51.9225,4.4792">🏠 Rotterdam</option>
+                            <option value="52.3676,4.9041">🏠 Amsterdam</option>
+                            <option value="51.9244,4.4777">🏠 Dordrecht</option>
+                            <option value="51.6978,5.3037">🏠 Eindhoven</option>
+                            <option value="51.8117,5.8372">🏠 Arnhem</option>
+                            <option value="52.2215,6.8937">🏠 Enschede</option>
+                        </select>
+                    </div>
 
                     <div id="map"></div>
 
-                    <div class="map-info">
-                        🎯 The map shows the Netherlands and Germany border region. Most Dutch residents near the border can reach German supermarkets within 20-40km.
+                    <div class="map-info" id="routeInfo">
+                        🎯 Select your starting location above and a German destination below. Distance will be calculated using real driving routes!
                     </div>
 
                     <label style="display: block; margin-bottom: 10px; color: #555; font-weight: 500;">
                         Popular German Shopping Destinations:
                     </label>
                     <div class="popular-destinations">
-                        <button class="destination-btn" onclick="setDestination('Aachen', 50.7753, 6.0839, 'Nijmegen', 25)">
+                        <button class="destination-btn" onclick="calculateRoute(50.7753, 6.0839, 'Aachen')">
                             🇩🇪 Aachen
-                            <span class="distance-badge">~25km</span>
+                            <span class="distance-badge" id="badge-aachen">Calc...</span>
                         </button>
-                        <button class="destination-btn" onclick="setDestination('Kleve', 51.7893, 6.1386, 'Nijmegen', 15)">
+                        <button class="destination-btn" onclick="calculateRoute(51.7893, 6.1386, 'Kleve')">
                             🇩🇪 Kleve
-                            <span class="distance-badge">~15km</span>
+                            <span class="distance-badge" id="badge-kleve">Calc...</span>
                         </button>
-                        <button class="destination-btn" onclick="setDestination('Venlo Border', 51.3704, 6.1724, 'Venlo', 5)">
+                        <button class="destination-btn" onclick="calculateRoute(51.3704, 6.1724, 'Venlo DE')">
                             🇩🇪 Venlo (DE)
-                            <span class="distance-badge">~5km</span>
+                            <span class="distance-badge" id="badge-venlo">Calc...</span>
                         </button>
-                        <button class="destination-btn" onclick="setDestination('Emmerich', 51.8317, 6.2475, 'Arnhem', 20)">
+                        <button class="destination-btn" onclick="calculateRoute(51.8317, 6.2475, 'Emmerich')">
                             🇩🇪 Emmerich
-                            <span class="distance-badge">~20km</span>
+                            <span class="distance-badge" id="badge-emmerich">Calc...</span>
+                        </button>
+                        <button class="destination-btn" onclick="calculateRoute(51.4823, 7.2161, 'Oberhausen')">
+                            🇩🇪 Oberhausen
+                            <span class="distance-badge" id="badge-oberhausen">Calc...</span>
+                        </button>
+                        <button class="destination-btn" onclick="calculateRoute(51.2277, 6.7735, 'Düsseldorf')">
+                            🇩🇪 Düsseldorf
+                            <span class="distance-badge" id="badge-dusseldorf">Calc...</span>
                         </button>
                     </div>
                 </div>
@@ -612,7 +634,7 @@
 
         function initMap() {
             // Initialize map centered on NL-DE border
-            map = L.map('map').setView([51.5, 6.0], 9);
+            map = L.map('map').setView([51.5, 6.0], 8);
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -650,6 +672,9 @@
             L.marker([51.8317, 6.2475], {icon: deIcon}).addTo(map)
                 .bindPopup('<b>Emmerich, DE</b><br>Border shopping');
 
+            L.marker([51.2277, 6.7735], {icon: deIcon}).addTo(map)
+                .bindPopup('<b>Düsseldorf, DE</b><br>Major city shopping');
+
             // Add border line visualization
             const borderPoints = [
                 [51.0, 6.0],
@@ -670,59 +695,85 @@
             L.control.scale().addTo(map);
         }
 
-        function setDestination(destName, lat, lng, origin, distance) {
-            // Update distance input
-            document.getElementById('distance').value = distance;
+        async function calculateRoute(destLat, destLng, destName) {
+            // Get starting location
+            const startSelect = document.getElementById('startLocation');
+            const [startLat, startLng] = startSelect.value.split(',').map(parseFloat);
+            const startCity = startSelect.options[startSelect.selectedIndex].text.replace('🏠 ', '');
 
-            // Clear existing route
-            if (routeLine) {
-                map.removeLayer(routeLine);
+            // Show loading state
+            document.getElementById('routeInfo').innerHTML = '⏳ Calculating exact driving distance...';
+
+            try {
+                // Call OSRM API for routing
+                const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&geometries=geojson`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const distanceKm = Math.round(route.distance / 1000); // Convert meters to km
+                    const durationMin = Math.round(route.duration / 60); // Convert seconds to minutes
+
+                    // Update distance input
+                    document.getElementById('distance').value = distanceKm;
+
+                    // Clear existing route
+                    if (routeLine) {
+                        map.removeLayer(routeLine);
+                    }
+                    if (startMarker) {
+                        map.removeLayer(startMarker);
+                    }
+                    if (endMarker) {
+                        map.removeLayer(endMarker);
+                    }
+
+                    // Add markers for route
+                    const homeIcon = L.divIcon({
+                        html: '🏠',
+                        className: 'emoji-marker',
+                        iconSize: [30, 30]
+                    });
+
+                    const cartIcon = L.divIcon({
+                        html: '🛒',
+                        className: 'emoji-marker',
+                        iconSize: [30, 30]
+                    });
+
+                    startMarker = L.marker([startLat, startLng], {icon: homeIcon}).addTo(map)
+                        .bindPopup(`<b>📍 ${startCity}</b><br>Your starting location`);
+
+                    endMarker = L.marker([destLat, destLng], {icon: cartIcon}).addTo(map)
+                        .bindPopup(`<b>🛒 ${destName}</b><br>${distanceKm}km / ${durationMin} min drive`);
+
+                    // Draw actual route from OSRM
+                    const routeCoordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    routeLine = L.polyline(routeCoordinates, {
+                        color: '#3498db',
+                        weight: 4,
+                        opacity: 0.7
+                    }).addTo(map);
+
+                    // Fit map to show route
+                    map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
+
+                    // Update info display
+                    document.getElementById('routeInfo').innerHTML =
+                        `✅ <strong>${startCity} → ${destName}</strong>: ${distanceKm}km (${durationMin} minutes drive)`;
+
+                    // Trigger calculation
+                    calculate();
+                } else {
+                    throw new Error('Route not found');
+                }
+            } catch (error) {
+                console.error('Error calculating route:', error);
+                document.getElementById('routeInfo').innerHTML =
+                    '❌ Error calculating route. Please try another destination or check your connection.';
             }
-            if (startMarker) {
-                map.removeLayer(startMarker);
-            }
-            if (endMarker) {
-                map.removeLayer(endMarker);
-            }
-
-            // Add markers for route
-            const homeIcon = L.divIcon({
-                html: '🏠',
-                className: 'emoji-marker',
-                iconSize: [30, 30]
-            });
-
-            const cartIcon = L.divIcon({
-                html: '🛒',
-                className: 'emoji-marker',
-                iconSize: [30, 30]
-            });
-
-            // Estimate NL starting position (offset from destination)
-            const startLat = lat + (Math.random() * 0.3 - 0.15);
-            const startLng = lng - 0.3;
-
-            startMarker = L.marker([startLat, startLng], {icon: homeIcon}).addTo(map)
-                .bindPopup(`<b>Your Location (${origin})</b>`);
-
-            endMarker = L.marker([lat, lng], {icon: cartIcon}).addTo(map)
-                .bindPopup(`<b>${destName}</b><br>${distance}km from home`);
-
-            // Draw route line
-            routeLine = L.polyline([
-                [startLat, startLng],
-                [lat, lng]
-            ], {
-                color: '#3498db',
-                weight: 4,
-                opacity: 0.7
-            }).addTo(map);
-
-            // Fit map to show route
-            map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
-
-            // Trigger calculation
-            calculate();
         }
 
         // Initialize map when page loads
