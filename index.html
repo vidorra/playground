@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layout Structure</title>
+    <title>Germany vs Netherlands Grocery Savings Calculator</title>
     <style>
         * {
             margin: 0;
@@ -61,45 +61,311 @@
             line-height: 1.6;
             color: #333;
         }
+
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .country-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .country-section h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flag {
+            font-size: 2em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .input-group .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group .input-with-unit input {
+            flex: 1;
+        }
+
+        .input-group .input-with-unit span {
+            color: #666;
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .results h2 {
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 1.1em;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .savings-highlight {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .savings-highlight .big-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .savings-highlight .small-text {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .positive {
+            color: #2ecc71;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        button {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="leftbar">
-        <h2>Leftbar</h2>
-        <p>200px wide, full height</p>
+        <h2>🛒 Info</h2>
+        <p style="margin-top: 20px; line-height: 1.6;">
+            This calculator helps you determine if shopping in Germany is worth the trip from the Netherlands.
+        </p>
+        <p style="margin-top: 15px; line-height: 1.6; font-size: 0.9em;">
+            <strong>Typical savings:</strong><br>
+            Groceries in Germany are generally 20-30% cheaper than in the Netherlands.
+        </p>
     </div>
 
     <div class="right-container">
         <div class="header">
-            <h1>Header</h1>
-            <p>Full width minus leftbar</p>
+            <h1>🇩🇪 vs 🇳🇱 Grocery Savings Calculator</h1>
+            <p>Calculate how much you can save by shopping in Germany</p>
         </div>
 
         <div class="content">
             <div class="floating-bar">
-                Floating Bar - Stays at top of content area when scrolling
+                💡 Tip: Update the values below to see real-time calculations!
             </div>
 
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
+            <div class="calculator-container">
+                <div class="country-section">
+                    <h2><span class="flag">🛒</span> Your Shopping Details</h2>
 
-            <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-            </p>
+                    <div class="input-group">
+                        <label for="groceryAmount">Monthly grocery spending in Netherlands</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="groceryAmount" value="400" min="0" step="10">
+                            <span>€</span>
+                        </div>
+                    </div>
 
-            <p>
-                Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?
-            </p>
+                    <div class="input-group">
+                        <label for="savingsPercent">Expected savings in Germany (%)</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="savingsPercent" value="25" min="0" max="50" step="1">
+                            <span>%</span>
+                        </div>
+                    </div>
 
-            <p>
-                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-            </p>
+                    <div class="input-group">
+                        <label for="tripsPerMonth">Shopping trips per month</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="tripsPerMonth" value="4" min="1" max="30" step="1">
+                            <span>trips</span>
+                        </div>
+                    </div>
+                </div>
 
-            <p>
-                Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.
-            </p>
+                <div class="country-section">
+                    <h2><span class="flag">⛽</span> Travel Costs</h2>
+
+                    <div class="input-group">
+                        <label for="distance">Distance to German supermarket (one way)</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="distance" value="30" min="0" step="1">
+                            <span>km</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="fuelConsumption">Car fuel consumption</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="fuelConsumption" value="7" min="0" step="0.1">
+                            <span>L/100km</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="fuelPrice">Current fuel price</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="fuelPrice" value="1.85" min="0" step="0.01">
+                            <span>€/L</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results">
+                    <h2>📊 Your Savings Breakdown</h2>
+
+                    <div class="result-item">
+                        <span class="result-label">Monthly grocery cost (NL)</span>
+                        <span class="result-value" id="nlCost">€400.00</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">Monthly grocery cost (DE)</span>
+                        <span class="result-value" id="deCost">€300.00</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">Grocery savings per month</span>
+                        <span class="result-value positive" id="grocerySavings">€100.00</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">Fuel cost per trip</span>
+                        <span class="result-value" id="fuelPerTrip">€7.77</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">Total fuel cost per month</span>
+                        <span class="result-value negative" id="totalFuel">€31.08</span>
+                    </div>
+
+                    <div class="savings-highlight">
+                        <div class="small-text">NET MONTHLY SAVINGS</div>
+                        <div class="big-number" id="netSavings">€68.92</div>
+                        <div class="small-text">That's <strong id="yearlySavings">€827.04</strong> per year!</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+        function formatCurrency(amount) {
+            return '€' + amount.toFixed(2);
+        }
+
+        function calculate() {
+            // Get input values
+            const groceryAmount = parseFloat(document.getElementById('groceryAmount').value) || 0;
+            const savingsPercent = parseFloat(document.getElementById('savingsPercent').value) || 0;
+            const tripsPerMonth = parseInt(document.getElementById('tripsPerMonth').value) || 0;
+            const distance = parseFloat(document.getElementById('distance').value) || 0;
+            const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value) || 0;
+            const fuelPrice = parseFloat(document.getElementById('fuelPrice').value) || 0;
+
+            // Calculate costs
+            const nlCost = groceryAmount;
+            const deCost = groceryAmount * (1 - savingsPercent / 100);
+            const grocerySavings = nlCost - deCost;
+
+            // Calculate fuel costs
+            const roundTripDistance = distance * 2; // km
+            const fuelPerTrip = (roundTripDistance / 100) * fuelConsumption * fuelPrice;
+            const totalFuelMonth = fuelPerTrip * tripsPerMonth;
+
+            // Calculate net savings
+            const netMonthly = grocerySavings - totalFuelMonth;
+            const netYearly = netMonthly * 12;
+
+            // Update display
+            document.getElementById('nlCost').textContent = formatCurrency(nlCost);
+            document.getElementById('deCost').textContent = formatCurrency(deCost);
+            document.getElementById('grocerySavings').textContent = formatCurrency(grocerySavings);
+            document.getElementById('fuelPerTrip').textContent = formatCurrency(fuelPerTrip);
+            document.getElementById('totalFuel').textContent = formatCurrency(totalFuelMonth);
+            document.getElementById('netSavings').textContent = formatCurrency(netMonthly);
+            document.getElementById('yearlySavings').textContent = formatCurrency(netYearly);
+
+            // Update colors based on positive/negative
+            const netSavingsElement = document.getElementById('netSavings');
+            if (netMonthly > 0) {
+                netSavingsElement.style.color = '#2ecc71';
+            } else {
+                netSavingsElement.style.color = '#e74c3c';
+            }
+        }
+
+        // Add event listeners to all inputs
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initial calculation
+        calculate();
+    </script>
 </body>
 </html>
