@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Germany vs Netherlands Grocery Savings Calculator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
@@ -253,6 +255,74 @@
             font-style: italic;
             margin-top: 10px;
         }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+        }
+
+        .map-info {
+            font-size: 0.9em;
+            color: #555;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .popular-destinations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .destination-btn {
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+            display: block;
+        }
+
+        .destination-btn:hover {
+            background: #2980b9;
+        }
+
+        .distance-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .emoji-marker {
+            background: none;
+            border: none;
+            font-size: 24px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px;
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -281,6 +351,38 @@
             </div>
 
             <div class="calculator-container">
+                <div class="country-section">
+                    <h2><span class="flag">🗺️</span> Trip Distance Visualizer</h2>
+
+                    <div id="map"></div>
+
+                    <div class="map-info">
+                        🎯 The map shows the Netherlands and Germany border region. Most Dutch residents near the border can reach German supermarkets within 20-40km.
+                    </div>
+
+                    <label style="display: block; margin-bottom: 10px; color: #555; font-weight: 500;">
+                        Popular German Shopping Destinations:
+                    </label>
+                    <div class="popular-destinations">
+                        <button class="destination-btn" onclick="setDestination('Aachen', 50.7753, 6.0839, 'Nijmegen', 25)">
+                            🇩🇪 Aachen
+                            <span class="distance-badge">~25km</span>
+                        </button>
+                        <button class="destination-btn" onclick="setDestination('Kleve', 51.7893, 6.1386, 'Nijmegen', 15)">
+                            🇩🇪 Kleve
+                            <span class="distance-badge">~15km</span>
+                        </button>
+                        <button class="destination-btn" onclick="setDestination('Venlo Border', 51.3704, 6.1724, 'Venlo', 5)">
+                            🇩🇪 Venlo (DE)
+                            <span class="distance-badge">~5km</span>
+                        </button>
+                        <button class="destination-btn" onclick="setDestination('Emmerich', 51.8317, 6.2475, 'Arnhem', 20)">
+                            🇩🇪 Emmerich
+                            <span class="distance-badge">~20km</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="country-section">
                     <h2><span class="flag">🛒</span> Your Shopping Details</h2>
 
@@ -504,6 +606,129 @@
 
         // Initial calculation
         calculate();
+
+        // Map initialization
+        let map, routeLine, startMarker, endMarker;
+
+        function initMap() {
+            // Initialize map centered on NL-DE border
+            map = L.map('map').setView([51.5, 6.0], 9);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Add Netherlands-Germany border area markers
+            const nlIcon = L.divIcon({
+                html: '🇳🇱',
+                className: 'emoji-marker',
+                iconSize: [30, 30]
+            });
+
+            const deIcon = L.divIcon({
+                html: '🇩🇪',
+                className: 'emoji-marker',
+                iconSize: [30, 30]
+            });
+
+            // Add popular NL starting points
+            L.marker([51.8126, 5.8372], {icon: nlIcon}).addTo(map)
+                .bindPopup('<b>Nijmegen, NL</b><br>Popular starting point');
+
+            L.marker([51.4416, 5.4697], {icon: nlIcon}).addTo(map)
+                .bindPopup('<b>Venlo, NL</b><br>Close to border');
+
+            // Add popular DE shopping destinations
+            L.marker([51.7893, 6.1386], {icon: deIcon}).addTo(map)
+                .bindPopup('<b>Kleve, DE</b><br>ALDI, Lidl, Kaufland');
+
+            L.marker([50.7753, 6.0839], {icon: deIcon}).addTo(map)
+                .bindPopup('<b>Aachen, DE</b><br>Large shopping centers');
+
+            L.marker([51.8317, 6.2475], {icon: deIcon}).addTo(map)
+                .bindPopup('<b>Emmerich, DE</b><br>Border shopping');
+
+            // Add border line visualization
+            const borderPoints = [
+                [51.0, 6.0],
+                [51.5, 6.0],
+                [52.0, 6.5],
+                [52.5, 7.0],
+                [53.0, 7.2]
+            ];
+
+            L.polyline(borderPoints, {
+                color: '#e74c3c',
+                weight: 3,
+                opacity: 0.6,
+                dashArray: '10, 10'
+            }).addTo(map).bindPopup('<b>NL-DE Border</b>');
+
+            // Add scale
+            L.control.scale().addTo(map);
+        }
+
+        function setDestination(destName, lat, lng, origin, distance) {
+            // Update distance input
+            document.getElementById('distance').value = distance;
+
+            // Clear existing route
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+            if (startMarker) {
+                map.removeLayer(startMarker);
+            }
+            if (endMarker) {
+                map.removeLayer(endMarker);
+            }
+
+            // Add markers for route
+            const homeIcon = L.divIcon({
+                html: '🏠',
+                className: 'emoji-marker',
+                iconSize: [30, 30]
+            });
+
+            const cartIcon = L.divIcon({
+                html: '🛒',
+                className: 'emoji-marker',
+                iconSize: [30, 30]
+            });
+
+            // Estimate NL starting position (offset from destination)
+            const startLat = lat + (Math.random() * 0.3 - 0.15);
+            const startLng = lng - 0.3;
+
+            startMarker = L.marker([startLat, startLng], {icon: homeIcon}).addTo(map)
+                .bindPopup(`<b>Your Location (${origin})</b>`);
+
+            endMarker = L.marker([lat, lng], {icon: cartIcon}).addTo(map)
+                .bindPopup(`<b>${destName}</b><br>${distance}km from home`);
+
+            // Draw route line
+            routeLine = L.polyline([
+                [startLat, startLng],
+                [lat, lng]
+            ], {
+                color: '#3498db',
+                weight: 4,
+                opacity: 0.7
+            }).addTo(map);
+
+            // Fit map to show route
+            map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
+
+            // Trigger calculation
+            calculate();
+        }
+
+        // Initialize map when page loads
+        window.addEventListener('load', function() {
+            initMap();
+        });
     </script>
 </body>
 </html>
